@@ -1,10 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { SermonInput, KOREAN_PROMPT_TEMPLATE, ENGLISH_PROMPT_TEMPLATE } from "../types";
 
-// 1. Vercel 환경변수에서 키 가져오기
+// Vercel 환경 변수에서 API 키 가져오기
 const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 
-// 2. Gemini 클라이언트 초기화
+// Gemini 클라이언트 초기화
 const genAI = new GoogleGenerativeAI(apiKey || "MISSING_KEY");
 
 export const generateSermon = async (input: SermonInput): Promise<string> => {
@@ -20,7 +20,7 @@ export const generateSermon = async (input: SermonInput): Promise<string> => {
       .replace('{TOPIC}', input.topic)
       .replace('{AUDIENCE}', input.audience);
 
-    // 3. 모델 변경: 최신 모델인 'gemini-1.5-flash' 사용 (속도 빠름, 에러 적음)
+    // ✅ 중요: 최신 모델 'gemini-1.5-flash' 사용 (404 에러 해결의 핵심!)
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const result = await model.generateContent(prompt);
