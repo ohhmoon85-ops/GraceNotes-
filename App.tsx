@@ -15,6 +15,7 @@ const App: React.FC = () => {
 
   const [status, setStatus] = useState<GenerationStatus>(GenerationStatus.IDLE);
   const [result, setResult] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const handleInputChange = (field: keyof SermonInput, value: string) => {
     setInput((prev) => ({ ...prev, [field]: value }));
@@ -23,14 +24,22 @@ const App: React.FC = () => {
   const handleSubmit = async () => {
     setStatus(GenerationStatus.LOADING);
     setResult('');
+    setErrorMessage('');
     
     try {
       const generatedText = await generateSermon(input);
-      setResult(generatedText);
-      setStatus(GenerationStatus.SUCCESS);
+      
+      // Check if the service returned an error string
+      if (generatedText.startsWith('Error:')) {
+         setErrorMessage(generatedText);
+         setStatus(GenerationStatus.ERROR);
+      } else {
+         setResult(generatedText);
+         setStatus(GenerationStatus.SUCCESS);
+      }
     } catch (error) {
       console.error(error);
-      setResult("An error occurred. Please check your connection and try again.");
+      setErrorMessage("An unexpected network error occurred. Please try again.");
       setStatus(GenerationStatus.ERROR);
     }
   };
@@ -55,7 +64,14 @@ const App: React.FC = () => {
         onSubmit={handleSubmit} 
       />
 
-      {result && (
+      {status === GenerationStatus.ERROR && errorMessage && (
+        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-center animate-fade-in-up">
+            <p className="font-medium">{input.language === 'ko' ? '오류가 발생했습니다' : 'Error Occurred'}</p>
+            <p className="text-sm mt-1">{errorMessage}</p>
+        </div>
+      )}
+
+      {status === GenerationStatus.SUCCESS && result && (
         <div id="result-section">
             <ResultDisplay content={result} />
         </div>
